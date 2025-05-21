@@ -8,14 +8,14 @@ echo "Iniciando escaneo de redes en modo monitor..."
 # Define la interfaz de monitoreo. Asumimos wlan0mon, pero se puede ajustar si airmon-ng la cambia.
 MONITOR_INTERFACE="wlan0mon"
 OUTPUT_PREFIX="redes_detectadas"
-CSV_FILE="${OUTPUT_PREFIX}-01.csv" # Nombre esperado del archivo CSV
+# CSV_FILE="${OUTPUT_PREFIX}-01.csv" # Nombre esperado del archivo CSV (ya no se usa directamente en cleanup)
 
 # --- Función para limpiar archivos temporales al salir o interrumpir el script ---
 cleanup() {
     echo ""
-    echo "Realizando limpieza de archivos temporales..."
-    # Elimina todos los archivos generados por airodump-ng con el prefijo
-    rm -f "${OUTPUT_PREFIX}-"*.csv "${OUTPUT_PREFIX}-"*.kismet.csv "${OUTPUT_PREFIX}-"*.kismet.netxml 2>/dev/null
+    echo "Realizando limpieza de archivos temporales (excepto el CSV)..."
+    # Elimina solo los archivos .kismet.csv y .kismet.netxml generados por airodump-ng
+    rm -f "${OUTPUT_PREFIX}-"*.kismet.csv "${OUTPUT_PREFIX}-"*.kismet.netxml 2>/dev/null
     echo "Limpieza completada."
     # Opcional: Si quieres detener el modo monitor al finalizar, descomenta la siguiente línea.
     # sudo airmon-ng stop wlan0mon > /dev/null 2>&1
@@ -68,8 +68,9 @@ echo "--- Esto es normal. El script está recopilando datos en segundo plano. Po
 echo "--- No cierres la terminal ni presiones Ctrl+C hasta que el escaneo termine. ---"
 echo ""
 
-# Limpia cualquier archivo CSV o Kismet anterior para evitar confusiones antes de iniciar el escaneo
-rm -f "${OUTPUT_PREFIX}-"*.csv "${OUTPUT_PREFIX}-"*.kismet.csv "${OUTPUT_PREFIX}-"*.kismet.netxml 2>/dev/null
+# Limpia cualquier archivo Kismet anterior para evitar confusiones antes de iniciar el escaneo
+# Mantenemos el CSV si ya existe de una ejecución anterior.
+rm -f "${OUTPUT_PREFIX}-"*.kismet.csv "${OUTPUT_PREFIX}-"*.kismet.netxml 2>/dev/null
 
 # Ejecuta airodump-ng en segundo plano y captura su PID
 sudo airodump-ng "$MONITOR_INTERFACE" --write "$OUTPUT_PREFIX" --output-format csv &
